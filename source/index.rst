@@ -7,8 +7,11 @@
 Kaileidoscope: LLVM Tutorial Chinese version(中文版)
 =================================================
 
-翻译  icymorn
-github  https://github.com/icymorn
++--------+----------------------------+
+| 翻译     | icymorn                    |
++========+============================+
+| github | https://github.com/icymorn |
++--------+----------------------------+
 
 
 目录:
