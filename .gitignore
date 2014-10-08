@@ -50,3 +50,5 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+
+/build/*
