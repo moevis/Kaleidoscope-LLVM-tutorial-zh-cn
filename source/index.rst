@@ -3,14 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Kaleidoscope: LLVM tutorial Chinese translation's documentation!
-===========================================================================
 
-Contents:
+Kaileidoscope: LLVM Tutorial Chinese version(中文版)
+=================================================
+
+翻译  icymorn
+github  https://github.com/icymorn
+
+
+目录:
 
 .. toctree::
    :maxdepth: 2
 
+   chapter-1.rst
 
 
 Indices and tables
@@ -19,4 +25,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
