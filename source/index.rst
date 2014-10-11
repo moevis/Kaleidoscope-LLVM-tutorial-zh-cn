@@ -20,6 +20,7 @@ Kaileidoscope: LLVM Tutorial Chinese version(中文版)
    :maxdepth: 2
 
    chapter-1.rst
+   chapter-2.rst
 
 
 Indices and tables
