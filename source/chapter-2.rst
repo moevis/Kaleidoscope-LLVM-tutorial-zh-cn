@@ -223,4 +223,73 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 
 通过基本表达式解析器，我们可以明白为什么我们要使用``CurTok``了，这里用了前置判断来选择并调用解析器。
 
-现在基本的表达式解析器以及给你完成了，我们将进一步处理二元表达式，这会有一点复杂。
+现在基本的表达式解析器已经完成了，我们下一步开始处理二元表达式，这会有一点复杂。
+
+二元表达式解析
+"""""""
+
+二元表达式的解析过程相对复杂，因为二元表达式会有二义性。比如，当出现``x+y*z``，解析器可以选择``(x+y)*z``或者``x+(y*z)``两种解析顺序。在数学定义中，我们期望后一种解析方式，因为``*``比``+``有更高的优先级。
+
+面对优先级问题，我们可用的处理方法有很多，不过论最优雅最高效的还是要数远算符优先级分析法（Operator-Precedence Parsing）。这种解析方法借助运算符优先级来选择解析顺序，所以，起初需要一个一个优先级表格：
+
+.. code-block:: C++
+
+	/// BinopPrecedence - This holds the precedence for each binary operator that is
+	/// defined.
+	static std::map<char, int> BinopPrecedence;
+
+	/// GetTokPrecedence - Get the precedence of the pending binary operator token.
+	static int GetTokPrecedence() {
+	  if (!isascii(CurTok))
+	    return -1;
+
+	  // Make sure it's a declared binop.
+	  int TokPrec = BinopPrecedence[CurTok];
+	  if (TokPrec <= 0) return -1;
+	  return TokPrec;
+	}
+
+	int main() {
+	  // Install standard binary operators.
+	  // 1 is lowest precedence.
+	  BinopPrecedence['<'] = 10;
+	  BinopPrecedence['+'] = 20;
+	  BinopPrecedence['-'] = 20;
+	  BinopPrecedence['*'] = 40;  // highest.
+	  ...
+	}
+
+现在我们可以开始着手解析二元表达式了，最核心的思想方法是将可能出现二义性的表达式分解成多个部分。想一下，比如表达式``a+b+(c+d)*e*f+g``。解析器将这个字符串看做一串由二元运算符分隔的基本表达式。因此，它将先解析第一个基本表达式``a``，接着将解析到成对出现的[+, b] [+, (c+d)] [*, e] [*, f]和 [+, g]。因为括号也是基础表达式，不用担心解析器会对``(c+d)``出现困惑。
+
+开始解析第一步，表达式是由第一个基础表达式和之后的一连串[运算符, 基础表达式]组成。
+
+.. code-block:: C++
+ 
+	/// expression
+	///   ::= primary binoprhs
+	///
+	static ExprAST *ParseExpression() {
+	  ExprAST *LHS = ParsePrimary();
+	  if (!LHS) return 0;
+
+	  return ParseBinOpRHS(0, LHS);
+	}
+
+``ParseBinOpRHS``是为我们解析*运算符-表达式*对的函数。它记录优先级和已解析部分的指针。
+
+优先级数值被传入``ParseBinOpRHS``，凡是比这个优先级值低的运算符都不能被使用。比如如果当前的解析的是[+, x]，且目前传入的优先级值为40，那么函数就不会消耗任何token（因为"+"优先级值仅20）。因此我们函数应该这样写：
+
+.. code-block:: C++
+
+    /// binoprhs
+	///   ::= ('+' primary)*
+	static ExprAST *ParseBinOpRHS(int ExprPrec, ExprAST *LHS) {
+	  // If this is a binop, find its precedence.
+	  while (1) {
+	    int TokPrec = GetTokPrecedence();
+
+	    // If this is a binop that binds at least as tightly as the current binop,
+	    // consume it, otherwise we are done.
+	    if (TokPrec < ExprPrec)
+	      return LHS;
+
