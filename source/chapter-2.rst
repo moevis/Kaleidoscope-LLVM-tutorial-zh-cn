@@ -293,3 +293,28 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 	    if (TokPrec < ExprPrec)
 	      return LHS;
 
+这部分代码获取了当前的token的优先级值，与传入的优先级进行比较。若当前的token已经不是运算符时，我们会获得一个无效的优先级值``-1``，它比任何一个运算符的优先级都小，我们可以借助它来获知二元表达式已经结束。若当前的token是运算符，我们继续：
+
+.. code-block:: C++
+
+	// Okay, we know this is a binop.
+	int BinOp = CurTok;
+	getNextToken();  // eat binop
+
+	// Parse the primary expression after the binary operator.
+	ExprAST *RHS = ParsePrimary();
+	if (!RHS) return 0;
+
+
+就这样，这段代码消耗了（并记住了）二元运算符然后解析接下来的基本表达式。我们用``[+, b]``以及后续的运算符-表达式对作为示例来完成接下来的代码。
+
+现在我们已知左侧的表达式和右侧的一组运算符-表达式对，我们必须决定用他们的关系是什么。比如我们可能会遇到"(a + b) 未知运算符"或者"a + (b 未知运算符)"这样的关系。为了决定这个关系，我们要依靠下一个运算符并与当前运算符优先级（在这个例子中是"+"）进行比较：
+
+.. code-block:: C++
+
+	// If BinOp binds less tightly with RHS than the operator after RHS, let
+	// the pending operator take RHS as its LHS.
+	int NextPrec = GetTokPrecedence();
+	if (TokPrec < NextPrec) {
+
+如果右侧的运算符优先级小于等于当前的运算符，我们就可以获知
