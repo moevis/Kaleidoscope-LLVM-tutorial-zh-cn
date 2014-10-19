@@ -317,4 +317,16 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 	int NextPrec = GetTokPrecedence();
 	if (TokPrec < NextPrec) {
 
-如果右侧的运算符优先级小于等于当前的运算符，我们就可以获知
+如果右侧的运算符优先级小于等于当前的运算符，我们就可以知道当前运算符的顺序是"(a + b) 运算符 ..."。在我们例子里，当前的运算符是"+"且下一个运算符是"+"，我们知道他们的优先级是一样的。因此，我们为"a + b"创建AST节点，接着，继续解析：
+
+.. code-block:: C++
+
+          ... if body omitted ...
+	    }
+
+	    // Merge LHS/RHS.
+	    LHS = new BinaryExprAST(BinOp, LHS, RHS);
+	  }  // loop around to the top of the while loop.
+	}
+
+在我们上面的例子里，将会将"a + b +"作为"a + b"并且进入下一个循环，处理下一个"+"。这些代码将消耗，记录，并将"(c + d)"作为基本表达式进行解析，即解析``[+, (c + d)]``。这时将进入上方的``if``语句，并比较"+"和"*"的优先级，因为这里的"*"优先级高于"+"，所以``if``语句将进入true分支。
