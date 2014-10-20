@@ -330,3 +330,23 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 	}
 
 在我们上面的例子里，将会将"a + b +"作为"a + b"并且进入下一个循环，处理下一个"+"。这些代码将消耗，记录，并将"(c + d)"作为基本表达式进行解析，即解析``[+, (c + d)]``。这时将进入上方的``if``语句，并比较"+"和"*"的优先级，因为这里的"*"优先级高于"+"，所以``if``语句将进入true分支。
+
+现在一个关键的问题来了，那就是“上方的if语句如何完整解析剩余部分”？我们继续用上面的例子建立正确的AST树，所以我们需要得到右侧“(c + d) * e * f”表达式的指针。这部分代码相当简单（上面代码if的部分）：
+
+.. code-block:: C++
+
+        // If BinOp binds less tightly with RHS than the operator after RHS, let
+	    // the pending operator take RHS as its LHS.
+	    int NextPrec = GetTokPrecedence();
+	    if (TokPrec < NextPrec) {
+	      RHS = ParseBinOpRHS(TokPrec+1, RHS);
+	      if (RHS == 0) return 0;
+	    }
+	    // Merge LHS/RHS.
+	    LHS = new BinaryExprAST(BinOp, LHS, RHS);
+	  }  // loop around to the top of the while loop.
+	}
+
+至此，我们知道右侧的二元运算符优先级应当高于当前的运算符。所以，任意拥有比“+”更高优先级的运算符-表达式对应当作为``RHS``变量返回。因此我们递归调用``ParseBinOpRHS``函数，并特别地将当前的优先级值加一，即"TokPrec + 1"。在我们以上的例子中，“(c+d)*e*f”将作为AST节点返回到``RHS``。
+
+最后，在最后一个循环里面，
