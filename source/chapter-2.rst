@@ -409,3 +409,19 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 	  getNextToken();  // eat extern.
 	  return ParsePrototype();
 	}
+
+最后，我们将让用户输入任意的外层表达式（top-level expressions），在运行的同时会计算出表达式结果。为此，我们需要处理无参数函数：
+
+.. code-block:: C++
+
+	/// toplevelexpr ::= expression
+	static FunctionAST *ParseTopLevelExpr() {
+	  if (ExprAST *E = ParseExpression()) {
+	    // Make an anonymous proto.
+	    PrototypeAST *Proto = new PrototypeAST("", std::vector<std::string>());
+	    return new FunctionAST(Proto, E);
+	  }
+	  return 0;
+	}
+
+现在我们完成了所有的零碎的部分，让我们用一段短小的驱动代码来调用他们吧！
