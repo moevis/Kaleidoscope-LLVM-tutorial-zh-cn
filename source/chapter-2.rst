@@ -352,3 +352,60 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 最后，在最后一个循环中解析完毕"+ g"部分。至此，我们用这一点点代码（14行不记空行和注视的代码）成功地以一种优雅的方式解析完了整个二元表达式。由于篇幅有限，也许有一些部分你还存在不解，我希望你能对这些代码多进行一下实验，以便熟悉它的工作原理，扫清困惑。
 
 目前，我们仅仅完成对表达式的解析，下一步我们要进一步完善语法。
+
+其它解析
+""""
+
+下一步的目标是处理函数声明。在Kaleidoscope中有两种函数声明方式，一是用"extern"声明外部函数，二是直接声明函数体。实现这部分的代码很简单直接，但是并不那么有趣：
+
+.. code-block:: C++
+
+    /// prototype
+	///   ::= id '(' id* ')'
+	static PrototypeAST *ParsePrototype() {
+	  if (CurTok != tok_identifier)
+	    return ErrorP("Expected function name in prototype");
+
+	  std::string FnName = IdentifierStr;
+	  getNextToken();
+
+	  if (CurTok != '(')
+	    return ErrorP("Expected '(' in prototype");
+
+	  // Read the list of argument names.
+	  std::vector<std::string> ArgNames;
+	  while (getNextToken() == tok_identifier)
+	    ArgNames.push_back(IdentifierStr);
+	  if (CurTok != ')')
+	    return ErrorP("Expected ')' in prototype");
+
+	  // success.
+	  getNextToken();  // eat ')'.
+
+	  return new PrototypeAST(FnName, ArgNames);
+	}
+
+有了以上，记录一个声明的函数就很简单了——仅仅需要保存一个函数原型和函数体的一串表达式：
+
+.. code-block:: C++
+    
+	/// definition ::= 'def' prototype expression
+	static FunctionAST *ParseDefinition() {
+	  getNextToken();  // eat def.
+	  PrototypeAST *Proto = ParsePrototype();
+	  if (Proto == 0) return 0;
+
+	  if (ExprAST *E = ParseExpression())
+	    return new FunctionAST(Proto, E);
+	  return 0;
+	}
+
+另外，我们也支持"extern"声明外部函数比如"sin"和"cos"或者用户定义的函数。"extern"与上面函数声明的区别仅仅在于没有具体的函数体：
+
+.. code-block:: C++
+    
+	/// external ::= 'extern' prototype
+	static PrototypeAST *ParseExtern() {
+	  getNextToken();  // eat extern.
+	  return ParsePrototype();
+	}
