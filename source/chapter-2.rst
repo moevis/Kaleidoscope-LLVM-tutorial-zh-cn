@@ -425,3 +425,26 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 	}
 
 现在我们完成了所有的零碎的部分，让我们用一段短小的驱动代码来调用他们吧！
+
+驱动代码
+""""
+
+驱动代码功能很简单，即在解析时调用相应的解析函数。其中没有什么有趣的地方，让我们看看这部分的代码：
+
+.. code-block:: C++
+
+	/// top ::= definition | external | expression | ';'
+	static void MainLoop() {
+	  while (1) {
+	    fprintf(stderr, "ready> ");
+	    switch (CurTok) {
+	    case tok_eof:    return;
+	    case ';':        getNextToken(); break;  // ignore top-level semicolons.
+	    case tok_def:    HandleDefinition(); break;
+	    case tok_extern: HandleExtern(); break;
+	    default:         HandleTopLevelExpression(); break;
+	    }
+	  }
+	}
+
+这里我们忽略了分号。你也许会问，这是为什么呢？最基本的理由是：如果你在命令行输入“4 + 5”，解析器并不知道这个表达式是否结束。比如，你在下一行可能会输入“def foo...”，这时候“4 + 5”是一个完整的表达式；相反地，如果你下一行输入“* 6”，那么上面的表达式还要继续解析。所以，在解析层加入分号的解析，是用来辅助判断输入是否结束。
