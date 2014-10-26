@@ -21,6 +21,7 @@ Kaileidoscope: LLVM Tutorial Chinese version(中文版)
 
    chapter-1.rst
    chapter-2.rst
+   chapter-3.rst
 
 
 Indices and tables
