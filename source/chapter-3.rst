@@ -1,6 +1,12 @@
 Kaleidoscope: LLVM中间代码（IR）生成
 ----------------------------
 
+:原文: `Kaleidoscope: Code generation to LLVM IR
+`_ 
+
+.. _http://llvm.org/docs/tutorial/LangImpl3.html: http://llvm.org/docs/tutorial/LangImpl3.html
+
+
 介绍
 ""
 
@@ -9,3 +15,25 @@ Kaleidoscope: LLVM中间代码（IR）生成
 *注意*：这部分的代码要求LLVM版本大于等于2.2。2.1以及更早的版本不兼容这部分代码。还有，你引入的库文件应当和你使用的LLVM版本相同：如果你在使用官方的release版，你可以在`llvm.org releases page`_ 上找到相应的库文件。
 
 .. _llvm.org releases page: http://llvm.org/releases/
+
+中间码生成配置
+"""""""
+
+为了生成中间码，我们需要代码上一些简单的配置。首先我们要在每一个AST类中添加虚函数（codegen）：
+
+.. code-block:: C++
+
+	/// ExprAST - Base class for all expression nodes.
+	class ExprAST {
+	public:
+	  virtual ~ExprAST() {}
+	  virtual Value *Codegen() = 0;
+	};
+
+	/// NumberExprAST - Expression class for numeric literals like "1.0".
+	class NumberExprAST : public ExprAST {
+	  double Val;
+	public:
+	  NumberExprAST(double val) : Val(val) {}
+	  virtual Value *Codegen();
+	};
