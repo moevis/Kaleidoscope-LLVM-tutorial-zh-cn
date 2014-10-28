@@ -37,3 +37,5 @@ Kaleidoscope: LLVM中间代码（IR）生成
 	  NumberExprAST(double val) : Val(val) {}
 	  virtual Value *Codegen();
 	};
+
+``Codegen()``用来生成中间码以及其它运行时需要的信息，他们都会返回LLVM value对象。"Value"类用来表示LLVM中的“静态单赋值寄存器（Static Single Assignment register）"或者“SSA value”。
