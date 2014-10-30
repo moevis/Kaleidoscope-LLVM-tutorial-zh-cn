@@ -38,4 +38,20 @@ Kaleidoscope: LLVM中间代码（IR）生成
 	  virtual Value *Codegen();
 	};
 
-``Codegen()``用来生成中间码以及其它运行时需要的信息，他们都会返回LLVM value对象。"Value"类用来表示LLVM中的“静态单赋值寄存器（Static Single Assignment register）"或者“SSA value”。
+``Codegen()``运行后会生成中间码以及其它运行时需要的信息，这些信息以LLVM value对象形式返回。"Value"类用来表示LLVM中的“静态单赋值寄存器（Static Single Assignment register）"或者“SSA value”。SSA值的特点是，它在经过相关指令计算出，并不能被改变（除非程序从头来过）。换句话说，SSA是个常量。你想了解SSA更多的话，请阅读 `静态单赋值`_ --一旦你了解它，你会发现这相当简单。
+
+.. _静态单赋值: http://
+
+值得说的是，除了添加``Codegen()``虚函数外，使用访客模式也是一种很好的方法。重申一遍，这个教程并不是停留在使用优雅的方法实践软件工程上；对于我们的目的来说，使用虚函数是最简单的方法。
+
+第二件事情要注意的是，我们在解析器中使用的“Error”方法将用来报告错误（比如，使用了一个未声明的变量。=）
+
+.. code-block:: C++
+
+	Value *ErrorV(const char *Str) { Error(Str); return 0; }
+
+	static Module *TheModule;
+	static IRBuilder<> Builder(getGlobalContext());
+	static std::map<std::string, Value*> NamedValues;
+
+静态变量会在整个代码生成阶段中被中使用，``TheModule``便是一个用来储存这些函数以及全局变量的LLVM结构体。在某种程度上，这就是LLVM中间码所构造的顶层结构。
