@@ -55,3 +55,9 @@ Kaleidoscope: LLVM中间代码（IR）生成
 	static std::map<std::string, Value*> NamedValues;
 
 静态变量会在整个代码生成阶段中被中使用，``TheModule``便是一个用来储存这些函数以及全局变量的LLVM结构体。在某种程度上，这就是LLVM中间码所构造的顶层结构。
+
+``Builder``是一个辅助对象，用来为生成LLVM指令提供方便。它是``IRBuilder``类的实例，用来标记当前位置以插入新的指令。
+
+``NameValues``键值表保存了当前的代码范围内定义的值，和记录并表示这些值的LLVM对象（换句话说，这就是当前代码的符号表）。在这种形式下，唯一可以参考的是函数参数（In this form of Kaleidoscope, the only things that can be referenced are function parameters. ）。因此，当生成函数体代码时，函数参数会被记录到这个表里去。
+
+当这些搭建完毕后，我们离为每句表达式生成代码更近了一步。我们还需要做的是配置好``Builder``，但现在，假设我们已经将``Builder``已经配置完毕，开始用它来生成代码。
