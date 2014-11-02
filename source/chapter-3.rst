@@ -61,3 +61,16 @@ Kaleidoscope: LLVM中间代码（IR）生成
 ``NameValues``键值表保存了当前的代码范围内定义的值，和记录并表示这些值的LLVM对象（换句话说，这就是当前代码的符号表）。在这种形式下，唯一可以参考的是函数参数（In this form of Kaleidoscope, the only things that can be referenced are function parameters. ）。因此，当生成函数体代码时，函数参数会被记录到这个表里去。
 
 当这些搭建完毕后，我们离为每句表达式生成代码更近了一步。我们还需要做的是配置好``Builder``，但现在，假设我们已经将``Builder``已经配置完毕，开始用它来生成代码。
+
+表达式代码生成
+"""""""
+
+从表达式生成LLVM代码相当直接：4种表达式节点总共不到45行带注释的代码。我们依次将这四种节点列出来：
+
+.. code-block:: C++
+
+	Value *NumberExprAST::Codegen() {
+	  return ConstantFP::get(getGlobalContext(), APFloat(Val));
+	}
+
+在LLVM中间码里，数字常量用``ConstantFP``类来表示，它将数字储存在内部的``APFloat``中（``APFloat``可以存储任意精度的浮点数）。这段代码主要用来创建和返回一个``ConstantFP``。注意在LLVM中间码中，所有的常量都是唯一并共享的。
