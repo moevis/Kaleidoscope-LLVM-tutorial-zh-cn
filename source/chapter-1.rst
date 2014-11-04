@@ -86,10 +86,10 @@ __ http://llvm.org/docs/tutorial/LangImpl1.html
 	static std::string IdentifierStr;  // Filled in if tok_identifier
 	static double NumVal;              // Filled in if tok_number
 
-我们的词法分析器返回的每一个token可能是一个枚举值或者是一个字符比如“+”，实际上这返回的是字符的ASCII码，如果当前的token是一个标识符（identifier），全局变量``IdentifierStr``就会保存标识符的名字，如果当前标识符是数字字符（如1），``NumVal``将负责保存它的值。注意，我们保存变量时用了全局变量，这并不是一个最好的选择，只是为了让它写起来足够简单。
+我们的词法分析器返回的每一个token可能是一个枚举值或者是一个字符比如“+”，实际上这返回的是字符的ASCII码，如果当前的token是一个标识符（identifier），全局变量\ ``IdentifierStr``\ 就会保存标识符的名字，如果当前标识符是数字字符（如1），\ ``NumVal``\ 将负责保存它的值。注意，我们保存变量时用了全局变量，这并不是一个最好的选择，只是为了让它写起来足够简单。
 
 
-词法分析器实际实现的功能是``gettok``函数。该函数被调用来从标准输入返回下一个token。它的定义开始为：
+词法分析器实际实现的功能是\ ``gettok``\ 函数。该函数被调用来从标准输入返回下一个token。它的定义开始为：
 
 .. code-block:: C++
 
@@ -101,9 +101,9 @@ __ http://llvm.org/docs/tutorial/LangImpl1.html
 	  while (isspace(LastChar))
 	    LastChar = getchar();
 
-``gettok``通过调用C语言的``getchar()``来读取标准输入流的字符，它读取字符后会将其保存在``LastChar``并剔除出输入流。首先要做的是忽略token之间的空白符。这个可以用下面的循环实现。
+\ ``gettok``\ 通过调用C语言的\ ``getchar()``\ 来读取标准输入流的字符，它读取字符后会将其保存在\ ``LastChar``\ 并剔除出输入流。首先要做的是忽略token之间的空白符。这个可以用下面的循环实现。
 
-接着`gettok`要做的是识别标识符和保留字符如“def”。Kaleidoscope通过以下的简单循环实现：
+接着\ ``gettok``\ 要做的是识别标识符和保留字符如“def”。Kaleidoscope通过以下的简单循环实现：
 
 .. code-block:: C++
 
@@ -117,7 +117,7 @@ __ http://llvm.org/docs/tutorial/LangImpl1.html
 	  return tok_identifier;
 	}
 
-当分析到标识符时，Kaleidoscope会设置全局变量``IdentifierStr``，在这个匹配中，还会检测是否出现了关键字。同样，匹配数字时，我们也这样：
+当分析到标识符时，Kaleidoscope会设置全局变量\ ``IdentifierStr``\ ，在这个匹配中，还会检测是否出现了关键字。同样，匹配数字时，我们也这样：
 
 .. code-block:: C++
 
@@ -132,7 +132,7 @@ __ http://llvm.org/docs/tutorial/LangImpl1.html
 	  return tok_number;
 	}
 
-这是处理输入的一段漂亮、简洁的代码。当读到数字时，我们使用了C中的``strtod``函数转化为数字，并储存在``NumVal``中。注意，这里可能会出现一些错误，当错误地读入“1.13.45.67”，这将被当作“1.23”处理。你可以自行去修复这个bug。下一步，我们处理注释：
+这是处理输入的一段漂亮、简洁的代码。当读到数字时，我们使用了C中的\ ``strtod``\ 函数转化为数字，并储存在\ ``NumVal``\ 中。注意，这里可能会出现一些错误，当错误地读入“1.13.45.67”，这将被当作“1.23”处理。你可以自行去修复这个bug。下一步，我们处理注释：
 
 .. code-block:: C++
 
