@@ -73,4 +73,34 @@ __llvm.org releases page: http://llvm.org/releases/
 	  return ConstantFP::get(getGlobalContext(), APFloat(Val));
 	}
 
-在LLVM中间码里，数字常量用\ ``ConstantFP``\ 类来表示，它将数字储存在内部的\ ``APFloat``\ 中（\ ``APFloat``\ 可以存储任意精度的浮点数）。这段代码主要用来创建和返回一个\ ``ConstantFP``\ 。注意在LLVM中间码中，所有的常量都是唯一并共享的。
+在LLVM中间码里，数字常量用\ ``ConstantFP``\ 类来表示，它将数字储存在内部的\ ``APFloat``\ 中（\ ``APFloat``\ 可以存储任意精度的浮点数）。这段代码主要用来创建和返回一个\ ``ConstantFP``\ 。注意在LLVM中间码中，所有的常量都是唯一并共享的。所以，我们用了LLVM中的API"foo::get(...)"而不是“new foo(..)”或者“foo::Create(..)”。
+
+.. code-block:: C++
+
+    Value *VariableExprAST::Codegen() {
+	  // Look this variable up in the function.
+	  Value *V = NamedValues[Name];
+	  return V ? V : ErrorV("Unknown variable name");
+	}
+
+引用变量也很简单，在Kaleidoscope的最初版本中，我们假定变量已经在某处被声明，且值是有效的。因为只有已经在\ `NamedValues`\ 被声明的才是函数参数，我们这段代码简单地检查变量名是否在\ `NamedValues`\ 中（假如不再，说明引用了一个未知变量）并返回它的值。在接下来的章节里，我们会在符号表中添加对循环变量和本地变量的支持。
+
+.. code-block:: C++
+
+    Value *BinaryExprAST::Codegen() {
+	  Value *L = LHS->Codegen();
+	  Value *R = RHS->Codegen();
+	  if (L == 0 || R == 0) return 0;
+
+	  switch (Op) {
+	  case '+': return Builder.CreateFAdd(L, R, "addtmp");
+	  case '-': return Builder.CreateFSub(L, R, "subtmp");
+	  case '*': return Builder.CreateFMul(L, R, "multmp");
+	  case '<':
+	    L = Builder.CreateFCmpULT(L, R, "cmptmp");
+	    // Convert bool 0/1 to double 0.0 or 1.0
+	    return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()),
+	                                "booltmp");
+	  default: return ErrorV("invalid binary operator");
+	  }
+	}
