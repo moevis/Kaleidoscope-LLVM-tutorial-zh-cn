@@ -3,8 +3,7 @@ Kaleidoscope: LLVM中间代码（IR）生成
 
 :原文: `Kaleidoscope: Code generation to LLVM IR
 `__
-
-__http://llvm.org/docs/tutorial/LangImpl3.html: http://llvm.org/docs/tutorial/LangImpl3.html
+__http://llvm.org/docs/tutorial/LangImpl3.html
 
 
 介绍
@@ -13,7 +12,6 @@ __http://llvm.org/docs/tutorial/LangImpl3.html: http://llvm.org/docs/tutorial/La
 欢迎来到“用LLVM实现语言”教程的第三章。这一章将介绍你如何从AST（第二章我们已经建好的）转换到LLVM中间码。你将接触到一点LLVM的工作原理，你会发现使用LLVM相当容易——生成LLVM中间码要比建立词法分析器和解析器容易得多。
 
 *注意*：这部分的代码要求LLVM版本大于等于2.2。2.1以及更早的版本不兼容这部分代码。还有，你引入的库文件应当和你使用的LLVM版本相同：如果你在使用官方的release版，你可以在`llvm.org releases page`__ 上找到相应的库文件。
-
 __llvm.org releases page: http://llvm.org/releases/
 
 中间码生成配置
@@ -39,12 +37,11 @@ __llvm.org releases page: http://llvm.org/releases/
 	};
 
 \ ``Codegen()``运行后会生成中间码以及其它运行时需要的信息，这些信息以LLVM value对象形式返回。"Value"类用来表示LLVM中的“静态单赋值寄存器（Static Single Assignment register）"或者“SSA value”。SSA值的特点是，它在经过相关指令计算出，并不能被改变（除非程序从头来过）。换句话说，SSA是个常量。你想了解SSA更多的话，请阅读 `静态单赋值`__ --一旦你了解它，你会发现这相当简单。
-
 .. __静态单赋值: http://
 
 值得说的是，除了添加\ ``Codegen()``\ 虚函数外，使用访客模式也是一种很好的方法。重申一遍，这个教程并不是停留在使用优雅的方法实践软件工程上；对于我们的目的来说，使用虚函数是最简单的方法。
 
-第二件事情要注意的是，我们在解析器中使用的“Error”方法将用来报告错误（比如，使用了一个未声明的变量。=）
+第二件事情要注意的是，我们在解析器中使用的“Error”方法将用来报告错误（比如，使用了一个未声明的变量。）
 
 .. code-block:: C++
 
@@ -83,7 +80,7 @@ __llvm.org releases page: http://llvm.org/releases/
 	  return V ? V : ErrorV("Unknown variable name");
 	}
 
-引用变量也很简单，在Kaleidoscope的最初版本中，我们假定变量已经在某处被声明，且值是有效的。因为只有已经在\ `NamedValues`\ 被声明的才是函数参数，我们这段代码简单地检查变量名是否在\ `NamedValues`\ 中（假如不再，说明引用了一个未知变量）并返回它的值。在接下来的章节里，我们会在符号表中添加对循环变量和本地变量的支持。
+引用变量也很简单，在Kaleidoscope的最初版本中，我们假定变量已经在某处被声明，且值是有效的。因为只有已经在\ `NamedValues`\ 被声明的才是函数参数，这段代码检查变量名是否在\ `NamedValues`\ 中（假如不在，说明引用了一个未知变量）并返回它的值。在接下来的章节里，我们会在符号表中添加对循环变量和本地变量的支持。
 
 .. code-block:: C++
 
@@ -104,3 +101,4 @@ __llvm.org releases page: http://llvm.org/releases/
 	  default: return ErrorV("invalid binary operator");
 	  }
 	}
+
