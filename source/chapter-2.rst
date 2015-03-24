@@ -101,12 +101,13 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 .. code-block:: C++
 
     ExprAST *X = new VariableExprAST("x");
-	ExprAST *Y = new VariableExprAST("y");
-	ExprAST *Result = new BinaryExprAST('+', X, Y);
+    ExprAST *Y = new VariableExprAST("y");
+    ExprAST *Result = new BinaryExprAST('+', X, Y);
 
 为了达到上面的目的，我们现在还需要以下的辅助函数
 
 .. code-block:: C++
+
 	/// CurTok/getNextToken - Provide a simple token buffer.  CurTok is the current
 	/// token the parser is looking at.  getNextToken reads another token from the
 	/// lexer and updates CurTok with its results.
@@ -134,6 +135,7 @@ __ http://llvm.org/docs/tutorial/LangImpl2.html
 我们先从数字开始，因为它们是最容易处理的。首先，我们先定义一个处理数字的函数：
 
 .. code-block:: C++
+
 	/// numberexpr ::= number
 	static ExprAST *ParseNumberExpr() {
 	  ExprAST *Result = new NumberExprAST(NumVal);
